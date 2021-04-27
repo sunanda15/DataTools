@@ -17,24 +17,28 @@ class WCSim:
         # Get first event and trigger to prevent segfault when later deleting trigger to prevent memory leak
         self.tree.GetEvent(0)
         self.current_event = 0
-        self.event = self.tree.wcsimrootevent
-        self.ntrigger = self.event.GetNumberOfEvents()
-        self.trigger = self.event.GetTrigger(0)
+        # 20" PMT trigger info
+        self.event_20 = self.tree.wcsimrootevent
+        self.ntrigger = self.event_20.GetNumberOfEvents()
+        self.trigger = self.event_20.GetTrigger(0)
+        # 3" PMT trigger info
+        self.event_3 = self.tree.wcsimrootevent2
         self.current_trigger = 0
 
     def get_event(self, ev):
         # Delete previous triggers to prevent memory leak (only if file does not change)
-        triggers = [self.event.GetTrigger(i) for i in range(self.ntrigger)]
+        triggers = [self.event_20.GetTrigger(i) for i in range(self.ntrigger)]
         oldfile = self.tree.GetCurrentFile()
         self.tree.GetEvent(ev)
         if self.tree.GetCurrentFile() == oldfile:
             [t.Delete() for t in triggers]
         self.current_event = ev
-        self.event = self.tree.wcsimrootevent
-        self.ntrigger = self.event.GetNumberOfEvents()
+        self.event_20 = self.tree.wcsimrootevent
+        self.event_3 = self.tree.wcsimrootevent2
+        self.ntrigger = self.event_20.GetNumberOfEvents()
 
     def get_trigger(self, trig):
-        self.trigger = self.event.GetTrigger(trig)
+        self.trigger = self.event_20.GetTrigger(trig)
         self.current_trigger = trig
         return self.trigger
 
@@ -113,7 +117,7 @@ class WCSim:
         }
 
     def get_digitized_hits(self):
-        position = []
+        position_20 = []
         charge = []
         time = []
         pmt = []
@@ -122,13 +126,14 @@ class WCSim:
             self.get_trigger(t)
             for hit in self.trigger.GetCherenkovDigiHits():
                 pmt_id = hit.GetTubeId() - 1
-                position.append([self.geo.GetPMT(pmt_id).GetPosition(j) for j in range(3)])
+                position_20.append([self.geo.GetPMT(pmt_id, 0).GetPosition(j) 
+                                   for j in range(3)])  # how do I tell if this pmt is 20" or 3"???
                 charge.append(hit.GetQ())
                 time.append(hit.GetT())
                 pmt.append(pmt_id)
                 trigger.append(t)
         hits = {
-            "position": np.asarray(position, dtype=np.float32),
+            "position_20": np.asarray(position_20, dtype=np.float32),
             "charge": np.asarray(charge, dtype=np.float32),
             "time": np.asarray(time, dtype=np.float32),
             "pmt": np.asarray(pmt, dtype=np.int32),
@@ -137,7 +142,7 @@ class WCSim:
         return hits
 
     def get_true_hits(self):
-        position = []
+        position_20 = []
         track = []
         pmt = []
         PE = []
@@ -150,13 +155,13 @@ class WCSim:
                 for j in range(hit.GetTotalPe(0), hit.GetTotalPe(0)+hit.GetTotalPe(1)):
                     pe = self.trigger.GetCherenkovHitTimes().At(j)
                     tracks.add(pe.GetParentID())
-                position.append([self.geo.GetPMT(pmt_id).GetPosition(k) for k in range(3)])
+                position_20.append([self.geo.GetPMT(pmt_id).GetPosition(k) for k in range(3)])
                 track.append(tracks.pop() if len(tracks) == 1 else -2)
                 pmt.append(pmt_id)
                 PE.append(hit.GetTotalPe(1))
                 trigger.append(t)
         hits = {
-            "position": np.asarray(position, dtype=np.float32),
+            "position_20": np.asarray(position_20, dtype=np.float32),
             "track": np.asarray(track, dtype=np.int32),
             "pmt": np.asarray(pmt, dtype=np.int32),
             "PE": np.asarray(PE, dtype=np.int32),
@@ -245,7 +250,7 @@ class WCSim:
             trigger_times[t] = self.trigger.GetHeader().GetDate()
             trig_type = self.trigger.GetTriggerType()
             if trig_type > np.iinfo(np.int32).max:
-                trig_type = -1;
+                trig_type = -1
             trigger_types[t] = trig_type
         triggers = {
                 "time": trigger_times,
