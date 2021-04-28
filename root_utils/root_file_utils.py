@@ -96,8 +96,8 @@ class WCSim:
         direction = []
         pid = []
         for i in range(self.trigger_20.GetNtrack()):
-            if tracks[i].GetParenttype() == 0 and tracks[i].GetFlag() == 0 and tracks[i].GetIpnu() in [22, 11, -11, 13,
-                                                                                                       -13, 111]:
+            if tracks[i].GetParenttype() == 0 and tracks[i].GetFlag() == 0\
+                    and tracks[i].GetIpnu() in [22, 11, -11, 13, -13, 111]:
                 pid.append(tracks[i].GetIpnu())
                 position.append([tracks[i].GetStart(0), tracks[i].GetStart(1), tracks[i].GetStart(2)])
                 direction.append([tracks[i].GetDir(0), tracks[i].GetDir(1), tracks[i].GetDir(2)])
@@ -120,8 +120,9 @@ class WCSim:
                 "direction": [particles[0].GetDir(i) for i in range(3)],
                 "energy": particles[0].GetE()
             }
-        # Particle with flag -1 is the incoming neutrino or 'dummy neutrino' used for gamma
-        # WCSim saves the gamma details (except position) in the neutrino track with flag -1
+        # Particle with flag -1 is the incoming neutrino or 'dummy neutrino' 
+        # used for gamma WCSim saves the gamma details (except position) in 
+        # the neutrino track with flag -1
         neutrino = [t for t in tracks if t.GetFlag() == -1]
         # Check for dummy neutrino that actually stores a gamma that converts to e+ / e-
         isConversion = len(particles) == 2 and {p.GetIpnu() for p in particles} == {11, -11}
@@ -132,9 +133,12 @@ class WCSim:
                 "direction": [neutrino[0].GetDir(i) for i in range(3)],
                 "energy": neutrino[0].GetE()
             }
-        # Check for dummy neutrino from old gamma simulations that didn't save the gamma info
-        if isConversion and len(neutrino) == 1 and neutrino[0].GetIpnu() == 12 and neutrino[0].GetE() < 0.0001:
-            # Should be a positron/electron pair from a gamma simulation (temporary hack since no gamma truth saved)
+        # Check for dummy neutrino from old gamma simulations that didn't save
+        # the gamma info
+        if isConversion and len(neutrino) == 1 and neutrino[0].GetIpnu() == 12 \
+                        and neutrino[0].GetE() < 0.0001:
+            # Should be a positron/electron pair from a gamma simulation 
+            # (temporary hack since no gamma truth saved)
             momentum = [sum(p.GetDir(i) * p.GetP() for p in particles) for i in range(3)]
             norm = np.sqrt(sum(p ** 2 for p in momentum))
             return {
