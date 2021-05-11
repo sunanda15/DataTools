@@ -104,9 +104,8 @@ class WCSim:
                 energy.append(tracks[i].GetE())
         return direction, energy, pid, position
 
-    def get_event_info_20(self):
-        # Depending on if the primary particle info can be accessed through 
-        # both 20" and 3", the "_20" might be dropped FIXME!!
+    def get_event_info(self):
+        # The primary particle info can be accessed through both 20" and 3"
         self.get_trigger_20(0)
         tracks = self.trigger_20.GetTracks()
         # Primary particles with no parent are the initial simulation
@@ -287,13 +286,13 @@ class WCSim:
             start_position_20.append(np.zeros((n_photons, 3), dtype=np.float32))
             end_position_20.append(np.zeros((n_photons, 3), dtype=np.float32))
             photons = self.trigger_20.GetCherenkovHitTimes()
-            end_time[t][:] = [p.GetTruetime() for p in photons]
-            track[t][:] = [p.GetParentID() for p in photons]
+            end_time_20[t][:] = [p.GetTruetime() for p in photons]
+            track_20[t][:] = [p.GetParentID() for p in photons]
             try:  # Only works with new tracking branch of WCSim
-                start_time[t][:] = [p.GetPhotonStartTime() for p in photons]
+                start_time_20[t][:] = [p.GetPhotonStartTime() for p in photons]
                 for i in range(3):
-                    start_position[t][:,i] = [p.GetPhotonStartPos(i)/10 for p in photons]
-                    end_position[t][:,i] = [p.GetPhotonEndPos(i)/10 for p in photons]
+                    start_position_20[t][:,i] = [p.GetPhotonStartPos(i)/10 for p in photons]
+                    end_position_20[t][:,i] = [p.GetPhotonEndPos(i)/10 for p in photons]
             except AttributeError: # leave as zeros if not using tracking branch
                 pass
         photons = {
@@ -328,13 +327,13 @@ class WCSim:
             start_position_3.append(np.zeros((n_photons, 3), dtype=np.float32))
             end_position_3.append(np.zeros((n_photons, 3), dtype=np.float32))
             photons = self.trigger_3.GetCherenkovHitTimes()
-            end_time[t][:] = [p.GetTruetime() for p in photons]
-            track[t][:] = [p.GetParentID() for p in photons]
+            end_time_3[t][:] = [p.GetTruetime() for p in photons]
+            track_3[t][:] = [p.GetParentID() for p in photons]
             try:  # Only works with new tracking branch of WCSim
-                start_time[t][:] = [p.GetPhotonStartTime() for p in photons]
+                start_time_3[t][:] = [p.GetPhotonStartTime() for p in photons]
                 for i in range(3):
-                    start_position[t][:,i] = [p.GetPhotonStartPos(i)/10 for p in photons]
-                    end_position[t][:,i] = [p.GetPhotonEndPos(i)/10 for p in photons]
+                    start_position_3[t][:,i] = [p.GetPhotonStartPos(i)/10 for p in photons]
+                    end_position_3[t][:,i] = [p.GetPhotonEndPos(i)/10 for p in photons]
             except AttributeError: # leave as zeros if not using tracking branch
                 pass
         photons = {

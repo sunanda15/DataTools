@@ -148,7 +148,6 @@ def dump_file(infile, outfile):
                         digi_hit_charge_20=digi_hit_charge_20,
                         digi_hit_time_20=digi_hit_time_20,
                         digi_hit_trigger_20=digi_hit_trigger_20,
-                        true_hit_pmt_20=true_hit_pmt_20,
                         digi_hit_pmt_3=digi_hit_pmt_3,
                         digi_hit_charge_3=digi_hit_charge_3,
                         digi_hit_time_3=digi_hit_time_3,
