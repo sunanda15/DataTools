@@ -234,9 +234,6 @@ if __name__ == '__main__':
             dset_hit_pmt_20[hit_offset_20:hit_offset_next_20] = pmts[hit_indices]
             hit_offset_20 = hit_offset_next_20
 
-            print("For event ", offset, " there are ", len(hit_indices), 
-                  " hit 20in pmts" )
-
         for i, (trigs, times, charges, pmts) in enumerate(zip(hit_triggers_3, 
             hit_times_3, hit_charges_3, hit_pmts_3)):
             
@@ -248,12 +245,9 @@ if __name__ == '__main__':
             dset_hit_pmt_3[hit_offset_3:hit_offset_next_3] = pmts[hit_indices]
             hit_offset_3 = hit_offset_next_3
 
-            print("For event ", offset, " there are ", len(hit_indices), 
-                  " hit 3in pmts" )
-
         offset = offset_next
     f.close()
     print("saved", hit_offset_20, "hits in 20in", offset, " events (each \
-        with at least", min_hits, "hits)")  # offset is good event? FIXME!!
+        with at least", min_hits, "hits)")  # offset is a file
     print("saved", hit_offset_3, "hits in 3in", offset, " events (each \
         with at least", min_hits, "hits)")
