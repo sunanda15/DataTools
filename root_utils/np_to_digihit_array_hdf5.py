@@ -190,8 +190,6 @@ if __name__ == '__main__':
         dset_energies[offset:offset_next, :] = energies.reshape(-1, 1)
         dset_positions[offset:offset_next, :, :] = positions.reshape(-1, 1, 3)
 
-        print("For event ", event_ids)
-
         labels = np.full(pids.shape[0], -1)
         for k, v in label_map.items():
             labels[pids == k] = v
@@ -236,7 +234,8 @@ if __name__ == '__main__':
             dset_hit_pmt_20[hit_offset_20:hit_offset_next_20] = pmts[hit_indices]
             hit_offset_20 = hit_offset_next_20
 
-            print("There are ", len(hit_indices), " hit 20in pmts" )
+            print("For event ", offset, " there are ", len(hit_indices), 
+                  " hit 20in pmts" )
 
         for i, (trigs, times, charges, pmts) in enumerate(zip(hit_triggers_3, 
             hit_times_3, hit_charges_3, hit_pmts_3)):
@@ -249,7 +248,8 @@ if __name__ == '__main__':
             dset_hit_pmt_3[hit_offset_3:hit_offset_next_3] = pmts[hit_indices]
             hit_offset_3 = hit_offset_next_3
 
-            print("There are ", len(hit_indices), " hit 3in pmts" )
+            print("For event ", offset, " there are ", len(hit_indices), 
+                  " hit 3in pmts" )
 
         offset = offset_next
     f.close()
