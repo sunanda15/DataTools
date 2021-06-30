@@ -165,7 +165,8 @@ class WCSim:
         for t in range(self.ntrigger_20):
             self.get_trigger_20(t)
             for hit in self.trigger_20.GetCherenkovDigiHits():
-                pmt_id = hit.GetTubeId() - 1
+                # pmt_id = hit.GetTubeId() - 1
+                pmt_id = hit.GetTubeId()
                 position_20.append([self.geo.GetPMT(pmt_id, 0).GetPosition(j)
                                    for j in range(3)])
                 print("20in: hit.GetTubeId() - 1 = ", pmt_id, 
