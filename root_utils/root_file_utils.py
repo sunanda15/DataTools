@@ -165,13 +165,9 @@ class WCSim:
         for t in range(self.ntrigger_20):
             self.get_trigger_20(t)
             for hit in self.trigger_20.GetCherenkovDigiHits():
-                # pmt_id = hit.GetTubeId() - 1
-                pmt_id = hit.GetTubeId()
+                pmt_id = hit.GetTubeId() - 1
                 position_20.append([self.geo.GetPMT(pmt_id, 0).GetPosition(j)
                                    for j in range(3)])
-                print("20in: hit.GetTubeId() - 1 = ", pmt_id, 
-                      "self.geo.GetPMT(pmt_id, 0).GetTubeNo() = ", 
-                      self.geo.GetPMT(pmt_id, 0).GetTubeNo())
                 charge_20.append(hit.GetQ())
                 time_20.append(hit.GetT())
                 pmt_20.append(pmt_id)
@@ -198,9 +194,6 @@ class WCSim:
                                                  # 1 for mPMTs as well FIXME
                 position_3.append([self.geo.GetPMT(pmt_id, 1).GetPosition(j)
                                    for j in range(3)])
-                print("3in: hit.GetTubeId() - 1 = ", pmt_id, 
-                      "self.geo.GetPMT(pmt_id, 1).GetTubeNo() = ", 
-                      self.geo.GetPMT(pmt_id, 1).GetTubeNo())
                 charge_3.append(hit.GetQ())
                 time_3.append(hit.GetT())
                 pmt_3.append(pmt_id)

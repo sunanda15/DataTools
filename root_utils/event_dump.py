@@ -81,7 +81,7 @@ def dump_file(infile, outfile):
 
     for ev in range(wcsim.nevent):
         wcsim.get_event(ev)
-        print("Now processing event ", ev)
+        # print("Now processing event ", ev)
 
         event_info = wcsim.get_event_info()
         pid[ev] = event_info["pid"]
