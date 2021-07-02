@@ -290,8 +290,6 @@ class WCSim:
             track_20[t][:] = [p.GetParentID() for p in photons]
             try:  # Only works with new tracking branch of WCSim
                 start_time_20[t][:] = [p.GetPhotonStartTime() for p in photons]
-                start_position_20 = np.asarray(start_position_20)
-                end_position_20 = np.asarray(end_position_20)
                 for i in range(3):
                     start_position_20[t][:,i] = [p.GetPhotonStartPos(i)/10 for p in photons]
                     end_position_20[t][:,i] = [p.GetPhotonEndPos(i)/10 for p in photons]
@@ -333,8 +331,6 @@ class WCSim:
             track_3[t][:] = [p.GetParentID() for p in photons]
             try:  # Only works with new tracking branch of WCSim
                 start_time_3[t][:] = [p.GetPhotonStartTime() for p in photons]
-                start_position_3 = np.asarray(start_position_3)
-                end_position_3 = np.asarray(end_position_3)
                 for i in range(3):
                     start_position_3[t][:,i] = [p.GetPhotonStartPos(i)/10 for p in photons]
                     end_position_3[t][:,i] = [p.GetPhotonEndPos(i)/10 for p in photons]
