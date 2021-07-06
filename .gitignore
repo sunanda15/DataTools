@@ -1,3 +1,4 @@
+.vscode
 *.npz
 /__pycache__/
 *.cpython*
