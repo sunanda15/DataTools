@@ -10,10 +10,10 @@ cd $DATATOOLS/cedar_scripts
 
 # project name, input data directory and output file name for this run
 name=HKHybrid
-data_dir=${SLURM_TMPDIR}/data
-ouput_name=${SLURM_TMPDIR}/data/${name}/test_2_file.hdf5
+data_dir=/scratch/jgao/data
+output_name="/scratch/jgao/data/test_2_file.hdf5"
 
-log_dir="/scratch/jgao/log/${name}/h5"
+log_dir="/scratch/jgao/log/h5"
 mkdir -p $log_dir
 cd $log_dir
 
@@ -24,6 +24,6 @@ for i in {0..0}; do
   f+="${data_dir}/${name}/*/*/*/*/*_${i}.npz "
 done
 
-sbatch --time=0:01:0 --job-name=npzh5h "${DATATOOLS}/cedar_scripts/make_digihit_h5.sh" "$output_name" "$f"
+sbatch --time=2:0:0 --job-name=npzh5 "${DATATOOLS}/cedar_scripts/make_digihit_h5.sh" "$output_name" "$f"
 
 # Try 20 files of 10 e- 10 mu- at a time
