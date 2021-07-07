@@ -23,7 +23,7 @@ cd $log_dir
 for i in {0..0}; do
   for j in e- mu-; do
     f="${data_dir}/${name}/${j}/*/*/*/*_${i}.npz "
-    sbatch --time=2:0:0 --job-name=npz2h5 \
+    sbatch --time=2:0:0 --job-name=npz2h5_${j}${i} \
       "${DATATOOLS}/cedar_scripts/make_digihit_h5.sh" \
       "${output_dir}/${j}_${i}.hdf5" "$f"
   done
