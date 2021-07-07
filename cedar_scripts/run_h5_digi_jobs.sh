@@ -24,6 +24,6 @@ for i in {0..0}; do
   f+="${data_dir}/${name}/*/*/*/*/*_${i}.npz "
 done
 
-sbatch --time=2:0:0 --job-name=npzh5 "${DATATOOLS}/cedar_scripts/make_digihit_h5.sh" "$output_name" "$f"
+sbatch --time=2:0:0 --job-name=npz2h5 "${DATATOOLS}/cedar_scripts/make_digihit_h5.sh" "$output_name" "$f"
 
 # Try 20 files of 10 e- 10 mu- at a time
