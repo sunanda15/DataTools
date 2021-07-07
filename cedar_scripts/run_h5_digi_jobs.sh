@@ -19,11 +19,9 @@ cd $log_dir
 
 # 0-999 npz files for mu-, 0-999 npz files for e-
 # Try 2 files of 1 e- 1 mu- at a time, concatinating file names together
-f=
 for i in {0..0}; do
-  f+="${data_dir}/${name}/*/*/*/*/*_${i}.npz "
+  f="${data_dir}/${name}/*/*/*/*/*_${i}.npz "
+  sbatch --time=2:0:0 --job-name=npz2h5 "${DATATOOLS}/cedar_scripts/make_digihit_h5.sh" "$output_name" "$f"
 done
-
-sbatch --time=2:0:0 --job-name=npz2h5 "${DATATOOLS}/cedar_scripts/make_digihit_h5.sh" "$output_name" "$f"
 
 # Try 20 files of 10 e- 10 mu- at a time

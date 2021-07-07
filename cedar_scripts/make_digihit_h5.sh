@@ -30,5 +30,5 @@ cd /home/jgao/work/DataTools/root_utils/
 # need to pass in output path + output name with option "-o", and the name of
 # the npz files
 echo "python np_to_digihit_array_hdf5.py -o $1 `echo ${@:2}`"
-python np_to_digihit_array_hdf5.py -o "$1" "`echo ${@:2}`"
+python np_to_digihit_array_hdf5.py -o "$1" `echo ${@:2}`
 
