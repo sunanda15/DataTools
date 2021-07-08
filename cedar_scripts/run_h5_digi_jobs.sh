@@ -22,9 +22,9 @@ cd $log_dir
 # 0-9 in 1 file, 10-99 in 1 file, 100-199 ... 900-999
 for i in ""; do
   for j in e- mu-; do
-    f="${data_dir}/${name}/${j}/*/*/*/*_${i}[0-9].npz "
-    sbatch --time=2:0:0 --job-name=npz2h5_${j}_0-9 \
+    f="${data_dir}/${name}/${j}/*/*/*/*_${i}[0-9][0-9].npz "
+    sbatch --time=2:0:0 --job-name=npz2h5_${j}_10-99 \
       "${DATATOOLS}/cedar_scripts/make_digihit_h5.sh" \
-      "${output_dir}/${j}_0-9.hdf5" "$f"
+      "${output_dir}/${j}_10-99.hdf5" "$f"
   done
 done
