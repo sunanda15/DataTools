@@ -19,14 +19,12 @@ mkdir -p $log_dir
 cd $log_dir
 
 # 0-999 npz files for mu-, 0-999 npz files for e-
-# Try 2 files of 1 e- 1 mu- at a time, concatinating file names together
-for i in {4..9}; do
+# 0-9 in 1 file, 10-99 in 1 file, 100-199 ... 900-999
+for i in ""; do
   for j in e- mu-; do
     f="${data_dir}/${name}/${j}/*/*/*/*_${i}[0-9].npz "
-    sbatch --time=2:0:0 --job-name=npz2h5_${j}${i} \
+    sbatch --time=2:0:0 --job-name=npz2h5_${j}_0-9 \
       "${DATATOOLS}/cedar_scripts/make_digihit_h5.sh" \
-      "${output_dir}/${j}_${i}.hdf5" "$f"
+      "${output_dir}/${j}_0-9.hdf5" "$f"
   done
 done
-
-# Try 20 files of 10 e- 10 mu- at a time
