@@ -24,16 +24,24 @@ if __name__ == '__main__':
     f = h5py.File(config.output_file, 'w')
 
     script_path = os.path.dirname(os.path.abspath(__file__))
-    git_status = subprocess.check_output(['git', '-C', script_path, 'status', '--porcelain', '--untracked-files=no']).decode()
+    git_status = subprocess.check_output(['git', '-C', script_path, 
+                                          'status','--porcelain', 
+                                          '--untracked-files=no']).decode()
     if git_status:
-        raise Exception("Directory of this script ({}) is not a clean git directory:\n{}Need a clean git directory for storing script version in output file.".format(script_path, git_status))
-    git_describe = subprocess.check_output(['git', '-C', script_path, 'describe', '--always', '--long', '--tags']).decode().strip()
-    print("git describe for path to this script ({}):".format(script_path), git_describe)
+        raise Exception("Directory of this script ({}) is not a clean git" +
+                        "directory:\n{}Need a clean git directory for storing" +
+                        "script version in output file."
+                        .format(script_path, git_status))
+    git_describe = subprocess.check_output(['git', '-C', script_path, 
+                                            'describe', '--always', '--long', 
+                                            '--tags']).decode().strip()
+    print("git describe for path to this script ({}):"
+          .format(script_path), git_describe)
     f.attrs['git-describe'] = git_describe
     f.attrs['command'] = str(sys.argv)
     f.attrs['timestamp'] = str(datetime.now())
 
-    total_rows = 0
+    total_rows = 0  # the number of events that have non zero hits
     total_hits = 0
     min_hits = 1
     good_rows_20 = 0
@@ -53,7 +61,7 @@ if __name__ == '__main__':
         trigger_times_20 = npz_file['trigger_time_20']
         trigger_types_20 = npz_file['trigger_type_20']
         hit_triggers_20 = npz_file['digi_hit_trigger_20']
-        total_rows += hit_triggers_20.shape[0]  # not 20" related
+        total_rows += hit_triggers_20.shape[0]  # not limited to 20"
         event_triggers_20 = np.full(hit_triggers_20.shape[0], np.nan)
         for i, (times, types, hit_trigs) in enumerate(zip(trigger_times_20, 
             trigger_types_20, hit_triggers_20)):
