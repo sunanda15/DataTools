@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --account=rpp-blairt2k
-#SBATCH --time=20:0:0
+#SBATCH --time=3:0:0
 #SBATCH --mem-per-cpu=16G
 #SBATCH --output=%x-%a.out
 #SBATCH --error=%x-%a.err
