@@ -20,7 +20,7 @@ cd $log_dir
 
 # 0-999 npz files for mu-, 0-999 npz files for e-
 # 0-9 in 1 file, 10-99 in 1 file, 100-199 ... 900-999.
-for i in {6..7} "9"; do
+for i in "3" "7"; do
   for j in mu-; do
     f="${data_dir}/${name}/${j}/*/*/*/*_${i}[0-9][0-9].npz "
     sbatch --time=20:0:0 --job-name=npz2h5_${j}_${i} \
