@@ -22,9 +22,12 @@ if __name__ == '__main__':
     for f in infiles[1:]:
         print(f"opened and checking input file {f.filename}")
         if f.keys() != keys:
-            raise KeyError(f"HDF5 file {f.filename} keys {f.keys()} do not match first file's keys {keys}.")
+            raise KeyError(f"HDF5 file {f.filename} keys {f.keys()} do" +
+                            " not match first file's keys {keys}.")
         if f.attrs.keys() != attr_keys:
-            raise KeyError(f"HDF5 file {f.filename} attributes {f.attrs.keys()} do not match first file's attributes {attr_keys}.")
+            raise KeyError(f"HDF5 file {f.filename} attributes" +
+                            " {f.attrs.keys()} do not match first" +
+                            " file's attributes {attr_keys}.")
     for k in attr_keys:
         out_file.attrs[k]  = np.hstack([f.attrs[k] for f in infiles]).tolist()
     for k in keys:
@@ -33,21 +36,44 @@ if __name__ == '__main__':
         for f in infiles[1:]:
             shape[0] += f[k].shape[0]
             if shape[1:] != list(f[k].shape[1:]):
-                raise ValueError(f"Array {k} in {f.filename} has shape {f[k].shape} which is incompatible with extending previous files shape {shape}.")
+                raise ValueError(f"Array {k} in {f.filename} has shape" +
+                                  " {f[k].shape} which is incompatible with" +
+                                  " extending previous files shape {shape}.")
         print(f"writing {k}, shape {shape}, dtype {dtype}")
         dset = out_file.create_dataset(k, shape=shape, dtype=dtype)
-        isIndex = False
-        if k == "event_hits_index":
-            isIndex = True
+        isIndex_20 = False
+        isIndex_3  = False
+        # the following part needs to be different for 20" and 3"
+        if k == "event_hits_index_20":
+            isIndex_20 = True
             offset = 0
-            print("  is an index array, so adding length of hit_pmt array in each file to the index values of the following file")
+            print("  is an 20in PMT index array, so adding length of" + 
+                  " hit_pmt_20 array in each file to the index values of" +
+                  " the following file")
         start = 0
         for f in infiles:
             stop = start+f[k].shape[0]
             print(f"  entries {start}:{stop} from file {f.filename}")
-            if isIndex:
+            if isIndex_20:
                 dset[start:stop] = np.array(f[k]) + offset
-                offset += f['hit_pmt'].shape[0]
+                offset += f['hit_pmt_20'].shape[0]
+            else:
+                dset[start:stop] = f[k]
+            start = stop
+        # 3" part
+        if k == "event_hits_index_3":
+            isIndex_3 = True
+            offset = 0
+            print("  is an 3in PMT index array, so adding length of" + 
+                  " hit_pmt_3 array in each file to the index values of" +
+                  " the following file")
+        start = 0
+        for f in infiles:
+            stop = start+f[k].shape[0]
+            print(f"  entries {start}:{stop} from file {f.filename}")
+            if isIndex_3:
+                dset[start:stop] = np.array(f[k]) + offset
+                offset += f['hit_pmt_3'].shape[0]
             else:
                 dset[start:stop] = f[k]
             start = stop
