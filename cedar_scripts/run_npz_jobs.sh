@@ -21,5 +21,5 @@ cd $log_dir
 for i in "352" "728" "729" "777" "782"; do
   # f="${data_dir}/${name}/WCSim/*/*/*/*/*_${i}[0-9].root"
   f="${data_dir}/${name}/WCSim/*/*/*/*/*_${i}.root"
-  sbatch --time=20:0:0 --job-name=rc${f##*_} "${DATATOOLS}/cedar_scripts/reconvert_files.sh" "$f"
+  sbatch --time=20:0:0 --job-name=rc${f##*_} "${DATATOOLS}/cedar_scripts/make_hybrid_npz.sh" "$f"
 done
