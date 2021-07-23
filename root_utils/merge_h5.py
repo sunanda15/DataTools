@@ -29,7 +29,7 @@ if __name__ == '__main__':
                             " {f.attrs.keys()} do not match first" +
                             " file's attributes {attr_keys}.")
     for k in attr_keys:
-        out_file.attrs[k]  = np.hstack([f.attrs[k] for f in infiles]).tolist()
+        out_file.attrs[k] = np.hstack([f.attrs[k] for f in infiles]).tolist()
     for k in keys:
         dtype = infiles[0][k].dtype
         shape = list(infiles[0][k].shape)
@@ -46,24 +46,13 @@ if __name__ == '__main__':
         # the following part needs to be different for 20" and 3"
         if k == "event_hits_index_20":
             isIndex_20 = True
-            offset = 0
+            offset_20 = 0
             print("  is an 20in PMT index array, so adding length of" + 
                   " hit_pmt_20 array in each file to the index values of" +
                   " the following file")
-        start = 0
-        for f in infiles:
-            stop = start+f[k].shape[0]
-            print(f"  entries {start}:{stop} from file {f.filename}")
-            if isIndex_20:
-                dset[start:stop] = np.array(f[k]) + offset
-                offset += f['hit_pmt_20'].shape[0]
-            else:
-                dset[start:stop] = f[k]
-            start = stop
-        # 3" part
-        if k == "event_hits_index_3":
+        elif k == "event_hits_index_3":
             isIndex_3 = True
-            offset = 0
+            offset_3 = 0
             print("  is an 3in PMT index array, so adding length of" + 
                   " hit_pmt_3 array in each file to the index values of" +
                   " the following file")
@@ -71,9 +60,16 @@ if __name__ == '__main__':
         for f in infiles:
             stop = start+f[k].shape[0]
             print(f"  entries {start}:{stop} from file {f.filename}")
-            if isIndex_3:
-                dset[start:stop] = np.array(f[k]) + offset
-                offset += f['hit_pmt_3'].shape[0]
+            if isIndex_20:
+                dset[start:stop] = np.array(f[k]) + offset_20
+                offset_20 += f['hit_pmt_20'].shape[0]
+                print("The length of this hit_pmt_20 is: ", f['hit_pmt_20'].shape[0])
+                print("offset_20: ", offset_20)
+            elif isIndex_3:
+                dset[start:stop] = np.array(f[k]) + offset_3
+                offset_3 += f['hit_pmt_3'].shape[0]
+                print("The length of this hit_pmt_3 is: ", f['hit_pmt_3'].shape[0])
+                print("offset_3: ", offset_3)
             else:
                 dset[start:stop] = f[k]
             start = stop
