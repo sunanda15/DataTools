@@ -13,8 +13,8 @@ def get_args():
     parser = argparse.ArgumentParser(description='convert and merge .npz files to hdf5')
     parser.add_argument('input_files', type=str, nargs='+')
     parser.add_argument('-o', '--output_file', type=str)
-    parser.add_argument('-H', '--half-height', type=float, default=300)
-    parser.add_argument('-R', '--radius', type=float, default=400)
+    parser.add_argument('-H', '--half-height', type=float, default=7100)
+    parser.add_argument('-R', '--radius', type=float, default=3400)
     args = parser.parse_args()
     return args
 
@@ -216,11 +216,11 @@ if __name__ == '__main__':
             gammas_above_threshold = (np.abs(pids) == 22) & (energies > 2)
             above_threshold = muons_above_threshold | electrons_above_threshold\
                 | gammas_above_threshold
-            outside_tank = (np.linalg.norm(stops[:, (0, 2)], axis=1) > config.radius)\
+            outside_tank = (np.linalg.norm(stops[:, (0, 2)], axis=2) > config.radius)\
                 | (np.abs(stops[:, 1]) > config.half_height)
             dset_veto[offset+i] = np.any(above_threshold & outside_tank)
             end_energy_estimate = energies - np.linalg.norm(stops - starts,
-                axis = 1) * 2
+                axis = 2) * 2
             muons_above_threshold = (np.abs(pids) == 13) &\
                 (end_energy_estimate > 166)
             electrons_above_threshold = (np.abs(pids) == 11) &\
