@@ -25,7 +25,7 @@ pip install --no-index h5py
 
 #cd /project/rpp-blairt2k/machine_learning/production_software/DataTools/\
 # root_utils/
-cd /home/jgao/work/DataTools/root_utils/
+cd /project/rpp-blairt2k/jgao/DataTools/root_utils/
 
 # need to pass in output path + output name with option "-o", and the name of
 # the npz files

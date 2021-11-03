@@ -1,5 +1,3 @@
-# Copied from Nick Prouse's git repo
-
 import argparse
 import h5py
 import numpy as np
