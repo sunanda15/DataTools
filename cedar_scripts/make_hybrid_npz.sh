@@ -21,13 +21,13 @@ for var in "$@"; do
     echo "The current file is $file"
     npzdir="$(dirname "$file")"
     echo "The directory containing file is extracted, which is $npzdir"
-    npzdir="${npzdir//$long_data_dir/}"
+    npzdir="${npzdir#"${long_data_dir}"}"
     echo "After deletion, the dir path is $npzdir"
-    npzdir="${data_dir}/${name}/numpy/${npzdir}"
+    npzdir="${data_dir}/${name}/numpy${npzdir}"
     echo "The npz dir is $npzdir"
     mkdir -p "$npzdir"
     echo "[`date`] converting ${file} to numpy file in ${npzdir}"
-    # python "$DATATOOLS/root_utils/event_dump.py" "${file}" -d "${npzdir}"
+    python "$DATATOOLS/root_utils/event_dump.py" "${file}" -d "${npzdir}"
   done
 done
 
