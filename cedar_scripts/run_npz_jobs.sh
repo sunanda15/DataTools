@@ -18,8 +18,9 @@ mkdir -p $log_dir
 cd $log_dir
 
 # 0-999 root files for mu-, 0-999 root files for e- 
-for i in "352" "728" "729" "777" "782"; do
+for i in "0"; do
+  echo "In the loop"
   # f="${data_dir}/${name}/WCSim/*/*/*/*/*_${i}[0-9].root"
   f="${data_dir}/${name}/WCSim/*/*/*/*/*_${i}.root"
-  sbatch --time=20:0:0 --job-name=rc${f##*_} "${DATATOOLS}/cedar_scripts/make_hybrid_npz.sh" "$f"
+  sbatch --time=0:0:5 --job-name=rc${f##*_} "${DATATOOLS}/cedar_scripts/make_hybrid_npz.sh" "$f"
 done
