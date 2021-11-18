@@ -4,7 +4,7 @@
 # This script is for checking if the number of WCSim root output files generted
 # matches expectation. It will also output the file numbers that are missing.
 # To use this script, do 
-#     ./check_root_file_generation.sh path/to/root/files
+#     ./check_root_file_generation.sh path/to/root/files/*
 
 alist=()
 
@@ -17,7 +17,7 @@ for var in "$@"; do
   done
 done
 echo "loop done"
-# echo ${alist[@]}
+#echo ${alist[@]}
 
 # Sort the array in order
 sorted=( $( printf "%s\n" "${alist[@]}" | sort -n ) )
