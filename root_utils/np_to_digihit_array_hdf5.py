@@ -163,7 +163,7 @@ if __name__ == '__main__':
     hit_offset_next_20 = 0
     hit_offset_3 = 0
     hit_offset_next_3 = 0
-    label_map = {22: 0, 11: 1, 13: 2}
+    label_map = {22: 0, 11: 1, 13: 2, 111: 3}
     for input_file in config.input_files:
         print(input_file, flush=True)
         npz_file = np.load(input_file, allow_pickle=True)
