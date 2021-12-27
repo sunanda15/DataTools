@@ -1,0 +1,9 @@
+.vscode
+*.npz
+/__pycache__/
+*.cpython*
+*output*
+*.json
+*.err
+*.out
+*.hdf5

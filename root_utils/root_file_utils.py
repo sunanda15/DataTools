@@ -4,61 +4,100 @@ import numpy as np
 
 ROOT.gSystem.Load(os.environ['WCSIMDIR'] + "/libWCSimRoot.so")
 
-
 class WCSim:
     def __init__(self, tree):
-        print("number of entries in the geometry tree: " + str(self.geotree.GetEntries()))
+        print("number of entries in the geometry tree: " +
+              str(self.geotree.GetEntries()))
         self.geotree.GetEntry(0)
         self.geo = self.geotree.wcsimrootgeom
         self.num_pmts = self.geo.GetWCNumPMT()
         self.tree = tree
         self.nevent = self.tree.GetEntries()
         print("number of entries in the tree: " + str(self.nevent))
-        # Get first event and trigger to prevent segfault when later deleting trigger to prevent memory leak
+        # Get first event and trigger to prevent segfault when later deleting
+        # trigger to prevent memory leak
         self.tree.GetEvent(0)
         self.current_event = 0
-        self.event = self.tree.wcsimrootevent
-        self.ntrigger = self.event.GetNumberOfEvents()
-        self.trigger = self.event.GetTrigger(0)
-        self.current_trigger = 0
+        # 20" PMT trigger info
+        self.event_20 = self.tree.wcsimrootevent
+        self.ntrigger_20 = self.event_20.GetNumberOfEvents()
+        self.trigger_20 = self.event_20.GetTrigger(0)
+        self.current_trigger_20 = 0
+        # 3" PMT trigger info
+        # The trigger for 20" and 3" PMTs are separate
+        self.event_3 = self.tree.wcsimrootevent2
+        self.ntrigger_3 = self.event_3.GetNumberOfEvents()
+        self.trigger_3 = self.event_3.GetTrigger(0)
+        self.current_trigger_3 = 0
 
     def get_event(self, ev):
-        # Delete previous triggers to prevent memory leak (only if file does not change)
-        triggers = [self.event.GetTrigger(i) for i in range(self.ntrigger)]
+        # Delete previous triggers to prevent memory leak (only if file does
+        # not change)
+        # FIXME! don't quite know how it's called, might need future adjustment
+        triggers_20 = [self.event_20.GetTrigger(i) for i in range(self.ntrigger_20)]
+        triggers_3 = [self.event_3.GetTrigger(i) for i in range(self.ntrigger_3)]
         oldfile = self.tree.GetCurrentFile()
         self.tree.GetEvent(ev)
         if self.tree.GetCurrentFile() == oldfile:
-            [t.Delete() for t in triggers]
+            [t.Delete() for t in triggers_20]
+            [t.Delete() for t in triggers_3]
         self.current_event = ev
-        self.event = self.tree.wcsimrootevent
-        self.ntrigger = self.event.GetNumberOfEvents()
+        self.event_20 = self.tree.wcsimrootevent
+        self.event_3 = self.tree.wcsimrootevent2
+        self.ntrigger_20 = self.event_20.GetNumberOfEvents()
+        self.ntrigger_3 = self.event_3.GetNumberOfEvents()
 
-    def get_trigger(self, trig):
-        self.trigger = self.event.GetTrigger(trig)
-        self.current_trigger = trig
-        return self.trigger
+    # Chose to create two sets of every method that differs for two PMT types
+    # instead of one method but modifying the variable names
 
-    def get_first_trigger(self):
+    def get_trigger_20(self, trig):
+        self.trigger_20 = self.event_20.GetTrigger(trig)
+        self.current_trigger_20 = trig
+        return self.trigger_20
+
+    def get_trigger_3(self, trig):
+        self.trigger_3 = self.event_3.GetTrigger(trig)
+        self.current_trigger_3 = trig
+        return self.trigger_3
+
+    def get_first_trigger_20(self):
         first_trigger = 0
         first_trigger_time = 9999999.0
-        for index in range(self.ntrigger):
-            self.get_trigger(index)
-            trigger_time = self.trigger.GetHeader().GetDate()
+        for index in range(self.ntrigger_20):
+            self.get_trigger_20(index)
+            trigger_time = self.trigger_20.GetHeader().GetDate() # this trigger_20 might be a problem,
+                                                                 # where is trigger time getting this from?
             if trigger_time < first_trigger_time:
                 first_trigger_time = trigger_time
                 first_trigger = index
-        return self.get_trigger(first_trigger)
+        return self.get_trigger_20(first_trigger)
 
-    def get_truth_info(self):  # deprecated: should now use get_event_info instead, leaving here for use with old files
-        self.get_trigger(0)
-        tracks = self.trigger.GetTracks()
+    def get_first_trigger_3(self):
+        first_trigger = 0
+        first_trigger_time = 9999999.0
+        for index in range(self.ntrigger_3):
+            self.get_trigger_3(index)
+            trigger_time = self.trigger_3.GetHeader().GetDate() # this trigger_3 might be a problem,
+                                                                # where is trigger time getting this from?
+            if trigger_time < first_trigger_time:
+                first_trigger_time = trigger_time
+                first_trigger = index
+        return self.get_trigger_3(first_trigger)
+
+    def get_truth_info(self):
+        # deprecated: should now use get_event_info instead, leaving here for 
+        # use with old files
+        # Since it's not in use, just added "_20" to keep the consistency but
+        # not introducing it for "_3"
+        self.get_trigger_20(0)
+        tracks = self.trigger_20.GetTracks()
         energy = []
         position = []
         direction = []
         pid = []
-        for i in range(self.trigger.GetNtrack()):
-            if tracks[i].GetParenttype() == 0 and tracks[i].GetFlag() == 0 and tracks[i].GetIpnu() in [22, 11, -11, 13,
-                                                                                                       -13, 111]:
+        for i in range(self.trigger_20.GetNtrack()):
+            if tracks[i].GetParenttype() == 0 and tracks[i].GetFlag() == 0\
+                    and tracks[i].GetIpnu() in [22, 11, -11, 13, -13, 111]:
                 pid.append(tracks[i].GetIpnu())
                 position.append([tracks[i].GetStart(0), tracks[i].GetStart(1), tracks[i].GetStart(2)])
                 direction.append([tracks[i].GetDir(0), tracks[i].GetDir(1), tracks[i].GetDir(2)])
@@ -66,8 +105,9 @@ class WCSim:
         return direction, energy, pid, position
 
     def get_event_info(self):
-        self.get_trigger(0)
-        tracks = self.trigger.GetTracks()
+        # The primary particle info can be accessed through both 20" and 3"
+        self.get_trigger_20(0)
+        tracks = self.trigger_20.GetTracks()
         # Primary particles with no parent are the initial simulation
         particles = [t for t in tracks if t.GetFlag() == 0 and t.GetParenttype() == 0]
         # Check there is exactly one particle with no parent:
@@ -79,8 +119,9 @@ class WCSim:
                 "direction": [particles[0].GetDir(i) for i in range(3)],
                 "energy": particles[0].GetE()
             }
-        # Particle with flag -1 is the incoming neutrino or 'dummy neutrino' used for gamma
-        # WCSim saves the gamma details (except position) in the neutrino track with flag -1
+        # Particle with flag -1 is the incoming neutrino or 'dummy neutrino' 
+        # used for gamma WCSim saves the gamma details (except position) in 
+        # the neutrino track with flag -1
         neutrino = [t for t in tracks if t.GetFlag() == -1]
         # Check for dummy neutrino that actually stores a gamma that converts to e+ / e-
         isConversion = len(particles) == 2 and {p.GetIpnu() for p in particles} == {11, -11}
@@ -91,9 +132,12 @@ class WCSim:
                 "direction": [neutrino[0].GetDir(i) for i in range(3)],
                 "energy": neutrino[0].GetE()
             }
-        # Check for dummy neutrino from old gamma simulations that didn't save the gamma info
-        if isConversion and len(neutrino) == 1 and neutrino[0].GetIpnu() == 12 and neutrino[0].GetE() < 0.0001:
-            # Should be a positron/electron pair from a gamma simulation (temporary hack since no gamma truth saved)
+        # Check for dummy neutrino from old gamma simulations that didn't save
+        # the gamma info
+        if isConversion and len(neutrino) == 1 and neutrino[0].GetIpnu() == 12 \
+                        and neutrino[0].GetE() < 0.0001:
+            # Should be a positron/electron pair from a gamma simulation 
+            # (temporary hack since no gamma truth saved)
             momentum = [sum(p.GetDir(i) * p.GetP() for p in particles) for i in range(3)]
             norm = np.sqrt(sum(p ** 2 for p in momentum))
             return {
@@ -112,98 +156,197 @@ class WCSim:
             "energy": sum(p.GetE() for p in particles)  # sum of energies
         }
 
-    def get_digitized_hits(self):
-        position = []
-        charge = []
-        time = []
-        pmt = []
-        trigger = []
-        for t in range(self.ntrigger):
-            self.get_trigger(t)
-            for hit in self.trigger.GetCherenkovDigiHits():
+    def get_digitized_hits_20(self):
+        position_20 = []
+        charge_20 = []
+        time_20 = []
+        pmt_20 = []
+        trigger_20 = []
+        for t in range(self.ntrigger_20):
+            self.get_trigger_20(t)
+            for hit in self.trigger_20.GetCherenkovDigiHits():
                 pmt_id = hit.GetTubeId() - 1
-                position.append([self.geo.GetPMT(pmt_id).GetPosition(j) for j in range(3)])
-                charge.append(hit.GetQ())
-                time.append(hit.GetT())
-                pmt.append(pmt_id)
-                trigger.append(t)
+                position_20.append([self.geo.GetPMT(pmt_id, 0).GetPosition(j)
+                                   for j in range(3)])
+                charge_20.append(hit.GetQ())
+                time_20.append(hit.GetT())
+                pmt_20.append(pmt_id)
+                trigger_20.append(t)
         hits = {
-            "position": np.asarray(position, dtype=np.float32),
-            "charge": np.asarray(charge, dtype=np.float32),
-            "time": np.asarray(time, dtype=np.float32),
-            "pmt": np.asarray(pmt, dtype=np.int32),
-            "trigger": np.asarray(trigger, dtype=np.int32)
+            "position_20": np.asarray(position_20, dtype=np.float32),
+            "charge_20": np.asarray(charge_20, dtype=np.float32),
+            "time_20": np.asarray(time_20, dtype=np.float32),
+            "pmt_20": np.asarray(pmt_20, dtype=np.int32),
+            "trigger_20": np.asarray(trigger_20, dtype=np.int32)
         }
         return hits
 
-    def get_true_hits(self):
-        position = []
-        track = []
-        pmt = []
-        PE = []
-        trigger = []
-        for t in range(self.ntrigger):
-            self.get_trigger(t)
-            for hit in self.trigger.GetCherenkovHits():
+    def get_digitized_hits_3(self):
+        position_3 = []
+        charge_3 = []
+        time_3 = []
+        pmt_3 = []
+        trigger_3 = []
+        for t in range(self.ntrigger_3):
+            self.get_trigger_3(t)
+            for hit in self.trigger_3.GetCherenkovDigiHits():
+                pmt_id = hit.GetmPMT_PMTId() - 1 # Don't know if I need to minus
+                                                 # 1 for mPMTs as well FIXME
+                position_3.append([self.geo.GetPMT(pmt_id, 1).GetPosition(j)
+                                   for j in range(3)])
+                charge_3.append(hit.GetQ())
+                time_3.append(hit.GetT())
+                pmt_3.append(pmt_id)
+                trigger_3.append(t)
+        hits = {
+            "position_3": np.asarray(position_3, dtype=np.float32),
+            "charge_3": np.asarray(charge_3, dtype=np.float32),
+            "time_3": np.asarray(time_3, dtype=np.float32),
+            "pmt_3": np.asarray(pmt_3, dtype=np.int32),
+            "trigger_3": np.asarray(trigger_3, dtype=np.int32)
+        }
+        return hits
+
+    def get_true_hits_20(self):
+        position_20 = []
+        track_20 = []
+        pmt_20 = []
+        PE_20 = []
+        trigger_20 = []
+        for t in range(self.ntrigger_20):
+            self.get_trigger_20(t)
+            for hit in self.trigger_20.GetCherenkovHits():
                 pmt_id = hit.GetTubeID() - 1
-                tracks = set()
+                tracks_20 = set()
                 for j in range(hit.GetTotalPe(0), hit.GetTotalPe(0)+hit.GetTotalPe(1)):
-                    pe = self.trigger.GetCherenkovHitTimes().At(j)
-                    tracks.add(pe.GetParentID())
-                position.append([self.geo.GetPMT(pmt_id).GetPosition(k) for k in range(3)])
-                track.append(tracks.pop() if len(tracks) == 1 else -2)
-                pmt.append(pmt_id)
-                PE.append(hit.GetTotalPe(1))
-                trigger.append(t)
+                    pe = self.trigger_20.GetCherenkovHitTimes().At(j)
+                    tracks_20.add(pe.GetParentID())
+                position_20.append([self.geo.GetPMT(pmt_id, 0).GetPosition(k) 
+                                    for k in range(3)])
+                track_20.append(tracks_20.pop() if len(tracks_20) == 1 else -2)
+                pmt_20.append(pmt_id)
+                PE_20.append(hit.GetTotalPe(1))
+                trigger_20.append(t)
         hits = {
-            "position": np.asarray(position, dtype=np.float32),
-            "track": np.asarray(track, dtype=np.int32),
-            "pmt": np.asarray(pmt, dtype=np.int32),
-            "PE": np.asarray(PE, dtype=np.int32),
-            "trigger": np.asarray(trigger, dtype=np.int32)
+            "position_20": np.asarray(position_20, dtype=np.float32),
+            "track_20": np.asarray(track_20, dtype=np.int32),
+            "pmt_20": np.asarray(pmt_20, dtype=np.int32),
+            "PE_20": np.asarray(PE_20, dtype=np.int32),
+            "trigger_20": np.asarray(trigger_20, dtype=np.int32)
         }
         return hits
 
-    def get_hit_photons(self):
-        start_position = []
-        end_position = []
-        start_time = []
-        end_time = []
-        track = []
-        pmt = []
-        trigger = []
-        for t in range(self.ntrigger):
-            self.get_trigger(t)
-            n_photons = self.trigger.GetNcherenkovhittimes()
-            trigger.append(np.full(n_photons, t, dtype=np.int32))
-            counts = [h.GetTotalPe(1) for h in self.trigger.GetCherenkovHits()]
-            hit_pmts = [h.GetTubeID()-1 for h in self.trigger.GetCherenkovHits()]
-            pmt.append(np.repeat(hit_pmts, counts))
-            end_time.append(np.zeros(n_photons, dtype=np.float32))
-            track.append(np.zeros(n_photons, dtype=np.int32))
-            start_time.append(np.zeros(n_photons, dtype=np.float32))
-            start_position.append(np.zeros((n_photons, 3), dtype=np.float32))
-            end_position.append(np.zeros((n_photons, 3), dtype=np.float32))
-            photons = self.trigger.GetCherenkovHitTimes()
-            end_time[t][:] = [p.GetTruetime() for p in photons]
-            track[t][:] = [p.GetParentID() for p in photons]
+    def get_true_hits_3(self):
+        position_3 = []
+        track_3 = []
+        pmt_3 = []
+        PE_3 = []
+        trigger_3 = []
+        for t in range(self.ntrigger_3):
+            self.get_trigger_3(t)
+            for hit in self.trigger_3.GetCherenkovHits():
+                pmt_id = hit.GetmPMT_PMTId() - 1
+                tracks_3 = set()
+                for j in range(hit.GetTotalPe(0), hit.GetTotalPe(0)+hit.GetTotalPe(1)):
+                    pe = self.trigger_3.GetCherenkovHitTimes().At(j)
+                    tracks_3.add(pe.GetParentID())
+                position_3.append([self.geo.GetPMT(pmt_id, 1).GetPosition(k) 
+                                    for k in range(3)])
+                track_3.append(tracks_3.pop() if len(tracks_3) == 1 else -2)
+                pmt_3.append(pmt_id)
+                PE_3.append(hit.GetTotalPe(1))
+                trigger_3.append(t)
+        hits = {
+            "position_3": np.asarray(position_3, dtype=np.float32),
+            "track_3": np.asarray(track_3, dtype=np.int32),
+            "pmt_3": np.asarray(pmt_3, dtype=np.int32),
+            "PE_3": np.asarray(PE_3, dtype=np.int32),
+            "trigger_3": np.asarray(trigger_3, dtype=np.int32)
+        }
+        return hits
+
+    def get_hit_photons_20(self):
+        start_position_20 = []
+        end_position_20 = []
+        start_time_20 = []
+        end_time_20 = []
+        track_20 = []
+        pmt_20 = []
+        trigger_20 = []
+        for t in range(self.ntrigger_20):
+            self.get_trigger_20(t)
+            n_photons = self.trigger_20.GetNcherenkovhittimes()
+            trigger_20.append(np.full(n_photons, t, dtype=np.int32))
+            counts = [h.GetTotalPe(1) for h in self.trigger_20.GetCherenkovHits()]
+            hit_pmts = [h.GetTubeID()-1 for h in self.trigger_20.GetCherenkovHits()]
+            pmt_20.append(np.repeat(hit_pmts, counts))
+            end_time_20.append(np.zeros(n_photons, dtype=np.float32))
+            track_20.append(np.zeros(n_photons, dtype=np.int32))
+            start_time_20.append(np.zeros(n_photons, dtype=np.float32))
+            start_position_20.append(np.zeros((n_photons, 3), dtype=np.float32))
+            end_position_20.append(np.zeros((n_photons, 3), dtype=np.float32))
+            photons = self.trigger_20.GetCherenkovHitTimes()
+            end_time_20[t][:] = [p.GetTruetime() for p in photons]
+            track_20[t][:] = [p.GetParentID() for p in photons]
             try:  # Only works with new tracking branch of WCSim
-                start_time[t][:] = [p.GetPhotonStartTime() for p in photons]
+                start_time_20[t][:] = [p.GetPhotonStartTime() for p in photons]
                 for i in range(3):
-                    start_position[t][:,i] = [p.GetPhotonStartPos(i)/10 for p in photons]
-                    end_position[t][:,i] = [p.GetPhotonEndPos(i)/10 for p in photons]
+                    start_position_20[t][:,i] = [p.GetPhotonStartPos(i)/10 for p in photons]
+                    end_position_20[t][:,i] = [p.GetPhotonEndPos(i)/10 for p in photons]
             except AttributeError: # leave as zeros if not using tracking branch
                 pass
         photons = {
-            "start_position": np.concatenate(start_position),
-            "end_position": np.concatenate(end_position),
-            "start_time": np.concatenate(start_time),
-            "end_time": np.concatenate(end_time),
-            "track": np.concatenate(track),
-            "pmt": np.concatenate(pmt),
-            "trigger": np.concatenate(trigger)
+            "start_position_20": np.concatenate(start_position_20),
+            "end_position_20": np.concatenate(end_position_20),
+            "start_time_20": np.concatenate(start_time_20),
+            "end_time_20": np.concatenate(end_time_20),
+            "track_20": np.concatenate(track_20),
+            "pmt_20": np.concatenate(pmt_20),
+            "trigger_20": np.concatenate(trigger_20)
         }
         return photons
+
+    def get_hit_photons_3(self):
+        start_position_3 = []
+        end_position_3 = []
+        start_time_3 = []
+        end_time_3 = []
+        track_3 = []
+        pmt_3 = []
+        trigger_3 = []
+        for t in range(self.ntrigger_3):
+            self.get_trigger_3(t)
+            n_photons = self.trigger_3.GetNcherenkovhittimes()
+            trigger_3.append(np.full(n_photons, t, dtype=np.int32))
+            counts = [h.GetTotalPe(1) for h in self.trigger_3.GetCherenkovHits()]
+            hit_pmts = [h.GetmPMT_PMTID()-1 for h in self.trigger_3.GetCherenkovHits()]
+            pmt_3.append(np.repeat(hit_pmts, counts))
+            end_time_3.append(np.zeros(n_photons, dtype=np.float32))
+            track_3.append(np.zeros(n_photons, dtype=np.int32))
+            start_time_3.append(np.zeros(n_photons, dtype=np.float32))
+            start_position_3.append(np.zeros((n_photons, 3), dtype=np.float32))
+            end_position_3.append(np.zeros((n_photons, 3), dtype=np.float32))
+            photons = self.trigger_3.GetCherenkovHitTimes()
+            end_time_3[t][:] = [p.GetTruetime() for p in photons]
+            track_3[t][:] = [p.GetParentID() for p in photons]
+            try:  # Only works with new tracking branch of WCSim
+                start_time_3[t][:] = [p.GetPhotonStartTime() for p in photons]
+                for i in range(3):
+                    start_position_3[t][:,i] = [p.GetPhotonStartPos(i)/10 for p in photons]
+                    end_position_3[t][:,i] = [p.GetPhotonEndPos(i)/10 for p in photons]
+            except AttributeError: # leave as zeros if not using tracking branch
+                pass
+        photons = {
+            "start_position_3": np.concatenate(start_position_3),
+            "end_position_3": np.concatenate(end_position_3),
+            "start_time_3": np.concatenate(start_time_3),
+            "end_time_3": np.concatenate(end_time_3),
+            "track_3": np.concatenate(track_3),
+            "pmt_3": np.concatenate(pmt_3),
+            "trigger_3": np.concatenate(trigger_3)
+        }
+        return photons
+
 
     def get_tracks(self):
         track_id = []
@@ -214,9 +357,9 @@ class WCSim:
         stop_position = []
         parent = []
         flag = []
-        for t in range(self.ntrigger):
-            self.get_trigger(t)
-            for track in self.trigger.GetTracks():
+        for t in range(self.ntrigger_20):
+            self.get_trigger_20(t)
+            for track in self.trigger_20.GetTracks():
                 track_id.append(track.GetId())
                 pid.append(track.GetIpnu())
                 start_time.append(track.GetTime())
@@ -237,19 +380,35 @@ class WCSim:
         }
         return tracks
 
-    def get_triggers(self):
-        trigger_times = np.empty(self.ntrigger, dtype=np.float32)
-        trigger_types = np.empty(self.ntrigger, dtype=np.int32)
-        for t in range(self.ntrigger):
-            self.get_trigger(t)
-            trigger_times[t] = self.trigger.GetHeader().GetDate()
-            trig_type = self.trigger.GetTriggerType()
+    def get_triggers_20(self):
+        trigger_times_20 = np.empty(self.ntrigger_20, dtype=np.float32)
+        trigger_types_20 = np.empty(self.ntrigger_20, dtype=np.int32)
+        for t in range(self.ntrigger_20):
+            self.get_trigger_20(t)
+            trigger_times_20[t] = self.trigger_20.GetHeader().GetDate()
+            trig_type = self.trigger_20.GetTriggerType()
             if trig_type > np.iinfo(np.int32).max:
-                trig_type = -1;
-            trigger_types[t] = trig_type
+                trig_type = -1
+            trigger_types_20[t] = trig_type
         triggers = {
-                "time": trigger_times,
-                "type": trigger_types
+                "time_20": trigger_times_20,
+                "type_20": trigger_types_20
+        }
+        return triggers
+
+    def get_triggers_3(self):
+        trigger_times_3 = np.empty(self.ntrigger_3, dtype=np.float32)
+        trigger_types_3 = np.empty(self.ntrigger_3, dtype=np.int32)
+        for t in range(self.ntrigger_3):
+            self.get_trigger_3(t)
+            trigger_times_3[t] = self.trigger_3.GetHeader().GetDate()
+            trig_type = self.trigger_3.GetTriggerType()
+            if trig_type > np.iinfo(np.int32).max:
+                trig_type = -1
+            trigger_types_3[t] = trig_type
+        triggers = {
+                "time_3": trigger_times_3,
+                "type_3": trigger_types_3
         }
         return triggers
 
