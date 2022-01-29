@@ -214,9 +214,18 @@ class WCSim:
         stop_position = []
         parent = []
         flag = []
+        parentid = []
+        vertexid = []
+        idexitflag = []
+        idexitpos = []
+        idexitekin = []
         for t in range(self.ntrigger):
             self.get_trigger(t)
+
             for track in self.trigger.GetTracks():
+                if track.GetParenttype() != 0: 
+                    #only keep primary tracks with parenttype ==0
+                    continue
                 track_id.append(track.GetId())
                 pid.append(track.GetIpnu())
                 start_time.append(track.GetTime())
@@ -225,6 +234,11 @@ class WCSim:
                 stop_position.append([track.GetStop(i) for i in range(3)])
                 parent.append(track.GetParenttype())
                 flag.append(track.GetFlag())
+                parentid.append(track.GetParentId())
+                vertexid.append(track.GetVertexId())
+                idexitflag.append(track.GetIDExitFlag())
+                idexitpos.append([track.GetIDExitPos(i) for i in range(3)])
+                idexitekin.append(track.GetIDExitEkin())
         tracks = {
             "id": np.asarray(track_id, dtype=np.int32),
             "pid": np.asarray(pid, dtype=np.int32),
@@ -233,7 +247,13 @@ class WCSim:
             "start_position": np.asarray(start_position, dtype=np.float32),
             "stop_position": np.asarray(stop_position, dtype=np.float32),
             "parent": np.asarray(parent, dtype=np.int32),
-            "flag": np.asarray(flag, dtype=np.int32)
+            "flag": np.asarray(flag, dtype=np.int32),
+            "parentid": np.asarray(parentid, dtype=np.int32),
+            "vertexid": np.asarray(vertexid, dtype=np.int32),
+            "idexitflag": np.asarray(idexitflag, dtype=np.int32),
+            "idexitpos": np.asarray(idexitpos, dtype=np.float32 ),
+            "idexitekin": np.asarray(idexitekin, dtype=np.float32 )
+            
         }
         return tracks
 

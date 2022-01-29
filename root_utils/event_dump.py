@@ -8,8 +8,8 @@ Authors: Nick Prouse
 """
 
 import argparse
-from root_utils.root_file_utils import *
-from root_utils.pos_utils import *
+from DataTools.root_utils.root_file_utils import *
+from DataTools.root_utils.pos_utils import *
 
 ROOT.gROOT.SetBatch(True)
 
@@ -57,7 +57,12 @@ def dump_file(infile, outfile):
     track_stop_position = np.empty(nevents, dtype=object)
     track_parent = np.empty(nevents, dtype=object)
     track_flag = np.empty(nevents, dtype=object)
-
+    track_parentid = np.empty(nevents, dtype=object)
+    track_vertexid = np.empty(nevents, dtype=object)
+    track_idexitflag = np.empty(nevents, dtype=object)
+    track_idexitpos = np.empty(nevents, dtype=object)
+    track_idexitekin = np.empty(nevents, dtype=object)
+    
     trigger_time = np.empty(nevents, dtype=object)
     trigger_type = np.empty(nevents, dtype=object)
 
@@ -93,6 +98,11 @@ def dump_file(infile, outfile):
         track_stop_position[ev] = tracks["stop_position"]
         track_parent[ev] = tracks["parent"]
         track_flag[ev] = tracks["flag"]
+        track_parentid[ev] = tracks["parentid"]
+        track_vertexid[ev] = tracks["vertexid"]
+        track_idexitflag[ev] = tracks["idexitflag"]
+        track_idexitpos[ev] = tracks["idexitpos"]
+        track_idexitekin[ev] = tracks["idexitekin"]
 
         triggers = wcsim.get_triggers()
         trigger_time[ev] = triggers["time"]
@@ -126,6 +136,11 @@ def dump_file(infile, outfile):
                         track_stop_position=track_stop_position,
                         track_parent=track_parent,
                         track_flag=track_flag,
+                        track_parentid=track_parentid,
+                        track_vertexid=track_vertexid,
+                        track_idexitflag=track_idexitflag,
+                        track_idexitpos=track_idexitpos,
+                        track_idexitekin=track_idexitekin,
                         trigger_time=trigger_time,
                         trigger_type=trigger_type
                         )
