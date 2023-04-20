@@ -17,7 +17,7 @@ source $SLURM_TMPDIR/env/bin/activate
 pip install --no-index --upgrade pip
 pip install --no-index h5py
 
-cd /home/sunanda1/scratch/ml_software/DataTools/root_utils
+cd /home/sunanda1/scratch/ml_software/DataTools/root_utils/
 
 # initially save to SLURM_TMPDIR for speed
 #args=("$@")
